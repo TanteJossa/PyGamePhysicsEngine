@@ -1,0 +1,3 @@
+               # create_text(str(setting[0]), maxcoords=((leftup[0] + reached_bottom * (totalSpace + space) / 2 + totalSpace, leftup[1] + nameSize - 20 + setting_row_count * 25 + reached_bottom * 25), 
+                #                                         (leftup[0] + reached_bottom * (totalSpace + space) / 2 + totalSpace + space / firstSettingSpacing, leftup[1] + nameSize + 5 + setting_row_count * 25 + reached_bottom * 25)))
+             
