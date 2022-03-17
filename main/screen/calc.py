@@ -34,3 +34,4 @@ def mouse_in_simfield(mousex, mousey):
             return False
     else:
         return False
+

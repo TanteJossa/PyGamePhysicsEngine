@@ -50,7 +50,7 @@ def create_rectangle(leftup=(10, 10), rightdown=(100, 100), color=gray, withheig
 #give the start and end of an arrow you can set a text that will be in the centre
 def create_arrow(begin=(100, 100), end=(200, 400), width=5, arrow_size=None, color=blue, text=None, textColor=None, textfont=fontfreesan, textposoffset=0):
     global screenXYratio
-    length = sqrt((end[0]-begin[0])**2 + (end[1]-begin[1])**2)
+    length = hypot(end[0]-begin[0], end[1]-begin[1])
 
     angle = atan2((end[1]-begin[1]), (end[0]-begin[0]))
 

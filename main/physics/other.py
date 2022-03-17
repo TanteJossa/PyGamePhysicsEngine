@@ -21,3 +21,9 @@ def plot_data(name, objectName, dataX, dataY, xlabelname, ylabelname):
 
 def clamp(n, smallest, largest): 
     return max(smallest, min(n, largest))
+
+def is_positive(value):
+    if value >= 0:
+        return 1
+    else:
+        return -1

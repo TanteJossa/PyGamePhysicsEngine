@@ -1,3 +1,4 @@
+from matplotlib.pyplot import spring
 from screen import *
 import pygame
 
@@ -20,12 +21,13 @@ screenY = 600
 
 #TIME
 #In hoeveel aparte berekeningen de animatie wordt opgedeeld per seconde
-StepsPerSec = 30 #0.0001
+StepsPerSec = 30 #0.0001   
 #Hoeveel gesimuleerde secondes in een echte seconde voorkomen
 SpeedMultiplier = 10 #100000
 
 #how much effect pulling on an object has
 clickSpringConstant = 0.957
+springMultiplier = 1 #10 * 10**10
 
 #PHYSICS
 #gravity
@@ -35,8 +37,8 @@ GravtityPixelsEnabled = False
 
 #ARROWS
 #pijl grootte multiplier hoe kleiner hoe groter de pijlen
-Fmultiplier = 10 #30e19
-Velmultiplier = 1 #10e2
+Fmultiplier = 10 #30e19 #
+Velmultiplier = 1 #10e2 # 
 #what forces are given an arrow
 enabledArrows = ("Fz","Flucht", "Fres", "Fzw", "Fspring")
 enabledArrowsColors = (black, liteblue, blue, litegray, white)
@@ -45,6 +47,12 @@ enabledArrowsColors = (black, liteblue, blue, litegray, white)
 screenlayout = [[7, 20],[7, 9], [5, 1]]
 singleSettingList = ["Grafiek", "Settings"]
 
+
+#SIMFIELD
+#simfieldsize in m
+simfieldsizex = None #8e11 #None  #
+#simfieldsizey = None
+simfieldsizey = 40000.0
 
 
                         
@@ -82,12 +90,6 @@ simFieldX2 = screen.get_width() / (screenlayout[0][0] + screenlayout[2][0]) * sc
 simFieldY2 = 10 + screen.get_height()  / (screenlayout[0][1] + screenlayout[1][1]) * screenlayout[0][1]
 screenXYratio = (simFieldY2 - simFieldY1) /  (simFieldX2 - simFieldX1)
 
-
-#SIMFIELD
-#simfieldsize in m
-simfieldsizex = None  #8e11
-#simfieldsizey = 4e11
-simfieldsizey = 40000.0
 
 if simfieldsizex == None:
     simfieldsizex = simfieldsizey * screenXYratio

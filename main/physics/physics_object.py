@@ -55,7 +55,10 @@ class PhysicsObject():
             self.icon = self.name
         else:
             self.icon = icon
- 
+    
+    def setSpring(self, spring=[0, 0]):
+        self.Fspring = spring
+
     def draw_force_arrows(self, enabledArrows=[], enabledArrowsColors=[]):
         global Fmultiplier
         global screenXYratio
@@ -163,7 +166,7 @@ class PhysicsObject():
         #bereken Flucht door eerst de dichtheid van de lucht op een bepaalde hoogte te berekenen en dan te berekenen welk effect dat heeft op het object
         if self.useAirRes == True:
           self.Luchtdruk = calc_luchtdruk(self.pos[1], Zw, Temp=4)
-          self.Flucht = (-1 * calc_flucht(self.Luchtdruk, v2=self.vel[0]**2, A=valopp, drag=valdrag), calc_flucht(self.Luchtdruk, v2=self.vel[1]**2, A=valopp, drag=valdrag))
+          self.Flucht = (calc_flucht(self.Luchtdruk, v=self.vel[0], A=self.opp, drag=self.drag), calc_flucht(self.Luchtdruk, v=self.vel[1], A=self.opp, drag=self.drag))
         else:
           self.Flucht = (0, 0)
 
