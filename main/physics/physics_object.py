@@ -24,16 +24,14 @@ class PhysicsObject():
         self.id = id
         id = id + 1
         self.m = massa
-        self.posy = startposy
-        self.posx = startposx
-        self.startposy = startposy
-        self.startposx = startposx
+        self.pos = [startposx, startposy]
+        self.startpos = [startposx, startposy]
         self.opp = opp
         self.drag = drag
-        self.Fres = (0, 0)
-        self.Fzw = (0, 0)
-        self.Fz = (0, 0)
-        self.startposy = startposy
+        self.Fres = [0, 0]
+        self.Fzw = [0, 0]
+        self.Fz = [0, 0]
+        self.Fspring = [0, 0]
         self.calc_onscreen_pos()
 
         self.Luchtdruk = 0
@@ -89,12 +87,12 @@ class PhysicsObject():
     def calc_pos(self):
 
         #Verander de positie met de snelheid, als een object niet op de grond ligt
-        self.posx = self.posx + (self.vel[0] / StepsPerSec)
+        self.pos[0] = self.pos[0] + (self.vel[0] / StepsPerSec)
 
-        if self.posy > 0:
-            self.posy = self.posy + (self.vel[1] / StepsPerSec)
-        elif self.posy < 0:
-            self.posy = 0
+        if self.pos[1] > 0:
+            self.pos[1] = self.pos[1] + (self.vel[1] / StepsPerSec)
+        elif self.pos[1] < 0:
+            self.pos[1] = 0
           
         self.calc_onscreen_pos()
 
@@ -107,8 +105,9 @@ class PhysicsObject():
         global  simfieldsizex
         global  simfieldsizey
 
-        self.objectY = 10 + (simFieldY2 - simFieldY1) * ((simfieldsizey - self.posy) / simfieldsizey)
-        self.objectX = 10 + (simFieldX2 - simFieldX1) * (self.posx / simfieldsizex)
+        self.objectY = 10 + (simFieldY2 - simFieldY1) * ((simfieldsizey - self.pos[1]) / simfieldsizey)
+        self.objectX = 10 + (simFieldX2 - simFieldX1) * (self.pos[0] / simfieldsizex)
+        return (self.objectX, self.objectY)
       
     
     def display_object(self):
@@ -120,7 +119,7 @@ class PhysicsObject():
         self.calc_pos()
 
         if self.icon == 'skydiving':
-            if self.posy < self.parachuteDeployHeight:
+            if self.pos[1] < self.parachuteDeployHeight:
                 self.objectImg = pygame.image.load('icons/' + 'parachute.png')
             else:
                 self.objectImg = pygame.image.load('icons/' + 'skydiving.png')
@@ -140,7 +139,7 @@ class PhysicsObject():
         self.Fz = (0, Zw * self.m)
 
         #bereken luchtsweerstand
-        if self.posy < self.parachuteDeployHeight and self.useParachute == True: 
+        if self.pos[1] < self.parachuteDeployHeight and self.useParachute == True: 
             if self.parachuteStep < 1:
                 self.parachuteStep = self.parachuteStep + (1 / (self.parachuteDeployTime * StepsPerSec))
 
@@ -163,7 +162,7 @@ class PhysicsObject():
 
         #bereken Flucht door eerst de dichtheid van de lucht op een bepaalde hoogte te berekenen en dan te berekenen welk effect dat heeft op het object
         if self.useAirRes == True:
-          self.Luchtdruk = calc_luchtdruk(self.posy, Zw, Temp=4)
+          self.Luchtdruk = calc_luchtdruk(self.pos[1], Zw, Temp=4)
           self.Flucht = (-1 * calc_flucht(self.Luchtdruk, v2=self.vel[0]**2, A=valopp, drag=valdrag), calc_flucht(self.Luchtdruk, v2=self.vel[1]**2, A=valopp, drag=valdrag))
         else:
           self.Flucht = (0, 0)
@@ -177,9 +176,8 @@ class PhysicsObject():
                     gravity = calc_gravity(self, instance)
                     self.Fzw = (self.Fzw[0] + gravity[0], self.Fzw[1] + gravity[1])
 
-
         #Tel alle krachten bij elkaar  op
-        self.Fres = (self.Fz[0] + self.Flucht[0] + self.Fzw[0] , self.Fz[1] + self.Flucht[1] + self.Fzw[1])
+        self.Fres = (self.Fz[0] + self.Flucht[0] + self.Fzw[0] + self.Fspring[0], self.Fz[1] + self.Flucht[1] + self.Fzw[1] + self.Fspring[1])
         
         #Tel Fres op bij de snelheid en deel door massa a = F/m
         self.vel = (self.vel[0] + (self.Fres[0] / StepsPerSec / self.m), self.vel[1] + (self.Fres[1] / StepsPerSec / self.m))
@@ -187,10 +185,10 @@ class PhysicsObject():
         #apply forces and calculate pos
         self.calc_pos()
         
-        #print("Current Height: " + str(round(self.posy, 2)) + f"{'Current Speed: '  + str(round(float(self.vel[0]), 2)) + 'm/s':>30}" + f"{'Current Fres Per Sec: '  + str(round(float(self.Fres[0]), 2)) + 'n':>40}" + f"{'Flucht Per Sec: ' + str(round(float(self.Flucht[0]), 2)) + 'n':>40}" + f"{'Tijd in Sim: ' + str(round(TotalSteps / StepsPerSec, 2)):>30}" + f"{'IRL Tijd: ' + str(round(TotalIRLTime, 2)) + 's':>20}")
+        #print("Current Height: " + str(round(self.pos[1], 2)) + f"{'Current Speed: '  + str(round(float(self.vel[0]), 2)) + 'm/s':>30}" + f"{'Current Fres Per Sec: '  + str(round(float(self.Fres[0]), 2)) + 'n':>40}" + f"{'Flucht Per Sec: ' + str(round(float(self.Flucht[0]), 2)) + 'n':>40}" + f"{'Tijd in Sim: ' + str(round(TotalSteps / StepsPerSec, 2)):>30}" + f"{'IRL Tijd: ' + str(round(TotalIRLTime, 2)) + 's':>20}")
         
         #Als een object op de grond ligt beweegt het object niet verder naar beneden
-#        if self.posy <= 0:
+#        if self.pos[1] <= 0:
 #            print("Landed after: " + str(round(TotalSteps / StepsPerSec, 2)) + "s" + "          " + "Finished Sim in: " + str(round(TotalIRLTime, 2)))
             
             #maak st-grafiek 
@@ -200,8 +198,8 @@ class PhysicsObject():
 #            plot_data("snelheid", self.name, self.paststep, self.pastvely, "Tijd (sec)", "Snelheid (m/s)")
 
         #save data voor grafiek
-        self.pastx.append(self.posx)
-        self.pasty.append(self.posy)
+        self.pastx.append(self.pos[0])
+        self.pasty.append(self.pos[1])
         self.pastvelx.append(self.vel[0])
         self.pastvely.append(self.vel[1])
         self.paststep.append(TotalSteps / StepsPerSec)

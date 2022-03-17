@@ -25,3 +25,12 @@ def calc_pixel_to_game_coords(x=None, y=None):
 def calc_text_coords(text="test",centre=(100, 100), font=fontfreesan):
     size = font.size(text)
     return [[centre[0] - size[0] / 2, centre[1] - size[1] / 2], [centre[0] + size[0] / 2, centre[1] + size[1] / 2]]
+
+def mouse_in_simfield(mousex, mousey):
+    if mousex - simFieldX1 >= 0 and simFieldX2 - mousex >= 0:
+        if mousey - simFieldY1 and simFieldY2 - mousey >= 0:
+            return True
+        else:
+            return False
+    else:
+        return False

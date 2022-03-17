@@ -24,6 +24,9 @@ StepsPerSec = 30 #0.0001
 #Hoeveel gesimuleerde secondes in een echte seconde voorkomen
 SpeedMultiplier = 10 #100000
 
+#how much effect pulling on an object has
+clickSpringConstant = 0.957
+
 #PHYSICS
 #gravity
 Zw = -9.81
@@ -35,8 +38,8 @@ GravtityPixelsEnabled = False
 Fmultiplier = 10 #30e19
 Velmultiplier = 1 #10e2
 #what forces are given an arrow
-enabledArrows = ("Fz","Flucht", "Fres", "Fzw")
-enabledArrowsColors = (black, liteblue, blue, litegray)
+enabledArrows = ("Fz","Flucht", "Fres", "Fzw", "Fspring")
+enabledArrowsColors = (black, liteblue, blue, litegray, white)
 
 #screen layout [[viewer x, viewer y], [menu under x, menu under y], [menu right x, menu right y]]
 screenlayout = [[7, 20],[7, 9], [5, 1]]
@@ -62,6 +65,10 @@ singleSettingList = ["Grafiek", "Settings"]
 #initialize pygame
 pygame.init()
 screen = pygame.display.set_mode((screenX, screenY), pygame.RESIZABLE)
+mousePressed = False
+click_arrow_start = (0, 0)
+click_arrow_end = (0, 0)
+last_click_selected_obj = False
 
 #text fonts
 fontfreesan = pygame.font.Font('freesansbold.ttf', 20)

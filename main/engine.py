@@ -53,29 +53,66 @@ while running:
     simFieldY2 = 10 + screen.get_height()  / (screenlayout[0][1] + screenlayout[1][1]) * screenlayout[0][1]
     screenXYratio = (simFieldY2 - simFieldY1) /  (simFieldX2 - simFieldX1)
 
+    #reload selected of
+    selected_obj = set_selected_obj(set_selected_obj_name)
+
 
     #event loop
     for event in pygame.event.get():
+
+
         #stop the program if someone exits
         if event.type == pygame.QUIT:
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             print(str(pygame.mouse.get_pos()) + str((calc_pixel_to_game_coords(pygame.mouse.get_pos()[0]), calc_pixel_to_game_coords(y=pygame.mouse.get_pos()[1]))))
-            
+            last_mous_clickpos = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+            selected_an_obj = False
+            mousePressed = True
+            last_click_selected_obj = True
             for instance in PhysicsObject.instancelist:
                 if instance.check_pos(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) == True:
                     set_selected_obj_name = instance
+                    selected_obj = set_selected_obj(set_selected_obj_name)
+
+                    selected_an_obj = True
+                    click_arrow_start = calc_game_to_pixel_coords(instance.pos[0], instance.pos[1]) 
+                    last_click_selected_obj = True
+
+
+            if selected_an_obj == False:
+                click_arrow_start = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+
 #           new_obj = physics_object(name='new_obj', startposx=calc_pixel_to_game_coords(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])[0] ,startposy=calc_pixel_to_game_coords(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])[1] , massa=2 * 10 , useParachute=False, useAirRes=False, useSolarSys=True, startvelx=-20)
+        if pygame.mouse.get_pressed()[0]:
+            try:
+                last_mous_pos = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+                click_arrow_end = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+                if last_click_selected_obj == True:
+                    click_arrow_start = (selected_obj.objectX + 10, selected_obj.objectY + 10)
+
+            except AttributeError:
+                pass
+        
+        if event.type == pygame.MOUSEBUTTONUP:
+            mousePressed = False
+            last_click_selected_obj = False
+
+
+    if last_click_selected_obj == True:
+        springlengthX = calc_pixel_to_game_coords(click_arrow_end[0]) - calc_pixel_to_game_coords(click_arrow_start[0])
+        springlengthY = calc_pixel_to_game_coords(click_arrow_end[1]) - calc_pixel_to_game_coords(click_arrow_start[1])
+        NewFspring = (springlengthX * -clickSpringConstant, springlengthY * -clickSpringConstant)
+        for instance in PhysicsObject.instancelist:
+            if instance == selected_obj:
+                instance.Fspring == NewFspring
 
 
     #clear screen
     screen.fill((0, 0, 0))
 
-    #reload selected of
-    selected_obj = set_selected_obj(set_selected_obj_name)
-
-    object_settings = [[["Naam",selected_obj.name],["Massa",selected_obj.m],["Oppervlakte",selected_obj.opp],["StartHoogte", selected_obj.startposy],["PosX", selected_obj.posx],["Hoogte", selected_obj.posy],["Velocity x", selected_obj.vel[0]],["Velocity Y", selected_obj.vel[1]],["Luchtdruk",selected_obj.Luchtdruk]],
+    object_settings = [[["Naam",selected_obj.name],["Massa",selected_obj.m],["Oppervlakte",selected_obj.opp],["StartHoogte", selected_obj.startpos[1]],["PosX", selected_obj.pos[0]],["Hoogte", selected_obj.pos[1]],["Velocity x", selected_obj.vel[0]],["Velocity Y", selected_obj.vel[1]],["Luchtdruk",selected_obj.Luchtdruk]],
                         [["Fres", sqrt(selected_obj.Fres[0]**2 + selected_obj.Fres[1]**2)], ["Fz", selected_obj.Fz[1]], ["Flucht",sqrt(selected_obj.Flucht[0]**2 + selected_obj.Flucht[1]**2)]],
                         []]
 
@@ -108,7 +145,9 @@ while running:
     pygame.display.flip()
     #manager.draw_ui(screen)
 
-
+    #draw new obj arrow
+    if mousePressed == True:
+        create_arrow(click_arrow_start, click_arrow_end)
 
 
     #draw gravity pixels
@@ -130,7 +169,7 @@ while running:
                 pixelSimY = calc_pixel_to_game_coords(y=(divisionY2 + divisionY1) / 2 )
                 
                 for instance in PhysicsObject.instancelist:
-                    currentGrav = currentGrav + (instance.m**2 * G) / ((instance.posx - pixelSimX)**2 + (instance.posy - pixelSimY)**2 + 0.0001)
+                    currentGrav = currentGrav + (instance.m**2 * G) / ((instance.pos[0] - pixelSimX)**2 + (instance.pos[1] - pixelSimY)**2 + 0.0001)
 
                 grav = currentGrav / maxGrav
 
