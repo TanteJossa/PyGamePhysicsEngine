@@ -73,10 +73,13 @@ simfieldsizey = 40000.0
 #initialize pygame
 pygame.init()
 screen = pygame.display.set_mode((screenX, screenY), pygame.RESIZABLE)
+
+#mouse an mouse arrow setup
 mousePressed = False
 click_arrow_start = (0, 0)
 click_arrow_end = (0, 0)
 last_click_selected_obj = False
+mouseHoldLength = 0
 
 #text fonts
 fontfreesan = pygame.font.Font('freesansbold.ttf', 20)
