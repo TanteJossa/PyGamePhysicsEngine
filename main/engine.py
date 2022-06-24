@@ -125,13 +125,14 @@ while running:
     screen.fill((0, 0, 0))
 
     #menu settings
-    object_settings = [[["Naam",selected_obj.name],["Massa",selected_obj.m],["Oppervlakte",selected_obj.opp],["StartHoogte", selected_obj.startpos[1]],["PosX", selected_obj.pos[0]],["Hoogte", selected_obj.pos[1]],["Velocity x", selected_obj.vel[0]],["Velocity Y", selected_obj.vel[1]],["Luchtdruk",selected_obj.Luchtdruk]],
-                        [["Fres", hypot(selected_obj.Fres[0], selected_obj.Fres[1])], ["Fz", selected_obj.Fz[1]], ["Flucht",hypot(selected_obj.Flucht[0], selected_obj.Flucht[1])], ["Fspring",hypot(selected_obj.Fspring[0], selected_obj.Fspring[1])]],
-                        []]
+    object_settings = [{"Naam" : selected_obj.name, "Massa": selected_obj.m, "Oppervlakte" : selected_obj.opp, "StartHoogte" : selected_obj.startposy, "PosX" : selected_obj.posx, "Hoogte" : selected_obj.posy, "Velocity x":  selected_obj.vel[0], "Velocity Y": selected_obj.vel[1], "Luchtdruk": selected_obj.Luchtdruk},
+                        {"Fres": sqrt(selected_obj.Fres[0]**2 + selected_obj.Fres[1]**2), "Fz" : selected_obj.Fz[1], "Flucht" : sqrt(selected_obj.Flucht[0]**2 + selected_obj.Flucht[1]**2)},
+                        {}]
 
-    undersettings = [[["Width", simfieldsizex],["Height", simfieldsizey]],
-                        [["IRL time", TotalIRLTime], ["In Sim Time", str(round(TotalSteps / StepsPerSec / 3600)) + "Uur"]],
-                        [["Arrow F size", Fmultiplier], ["Arrow Vel size", Velmultiplier]]]
+    undersettings = [{"Width" : simfieldsizex, "Height": simfieldsizey},
+                     {"IRL time": TotalIRLTime, "In Sim Time": str(round(TotalSteps / StepsPerSec / 3600)) + "Uur"},
+                     {"Arrow F size" : Fmultiplier, "Arrow Vel size": Velmultiplier}]
+
 
     #menu blocks
     #setting menu
