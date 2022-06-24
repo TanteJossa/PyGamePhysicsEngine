@@ -1,220 +1,259 @@
-import matplotlib as plt
-import os
-from time import time, sleep
-import time
-import pygame
 from math import *
-from physics.physics_object import *
-from physics.other import *
-from screen.create import *
-from screen.calc import *
+
+from sqlalchemy import values
 from settings.settings import *
+from screen.calc import *
 
-#create objects
-Baumgartner = PhysicsObject(name='Baumgartner',startposy=39045, startposx=200, startvelx=100, massa=80, opp=2, drag=0.7, useParachute=True, parachuteOpp=42.6, parachuteDrag=1.75, parachuteDeployTime=5, parachuteDeployHeight=3000, icon='skydiving')
-
-# sun = PhysicsObject(name='sun', startposy=simfieldsizey / 2, startposx=simfieldsizex / 2, massa=4e30 , useParachute=False, useAirRes=False, useSolarSys=True)
-# sun2 = PhysicsObject(name='sun2', startposy=simfieldsizey / 4 * 3, startposx=simfieldsizex / 2, massa=4e30 , useParachute=False, startvelx=30000, useAirRes=False, useSolarSys=True, icon='sun')
-
-# mercury = PhysicsObject(name='mercury', startposy=sun.startpos[1], startposx=sun.startpos[0] - 0.58e11, massa=3.285E23 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=47480)
-
-# venus = PhysicsObject(name='venus', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.08e11, massa=4.867E24 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=35020)
-
-# earth = PhysicsObject(name='earth', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.6e11, massa=5.97219e24, useParachute=False, useAirRes=False, startvelx=0, startvely=29780, useSolarSys=True)
-
-# moon = PhysicsObject(name='moon', startposy=earth.startpos[1], startposx=earth.startpos[0] - 3.844e9, massa=7.34767309e22 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=earth.vel[1], startvelx=1000)
-
-# mars = PhysicsObject(name='mars', startposy=sun.startpos[1], startposx=sun.startpos[0] - 2.28e11, massa=6.39E23, useParachute=False, useAirRes=False, startvelx=0, startvely=24130, useSolarSys=True)
-
-#game loop
-running = True
-clock = pygame.time.Clock()
-
-#initialize phisics objects
-[instance.update() for instance in PhysicsObject.instancelist]
-
-#reload selected of
-set_selected_obj_name = Baumgartner
-
-#run gui till the program is quitted
-while running:
-    #setup for frame time calculation
-    StartTime = time.time()
-    time_delta = clock.tick(60)/1000.0
-
-    #set the screen size if it has changed
-    screenX = screen.get_size()[0]
-    screenY = screen.get_size()[1]
-    simFieldX1 = 10
-    simFieldY1 = 10
-    simFieldX2 = screen.get_width() / (screenlayout[0][0] + screenlayout[2][0]) * screenlayout[0][0]
-    simFieldY2 = 10 + screen.get_height()  / (screenlayout[0][1] + screenlayout[1][1]) * screenlayout[0][1]
-    screenXYratio = (simFieldY2 - simFieldY1) /  (simFieldX2 - simFieldX1)
-
-    #reload selected of
-    selected_obj = set_selected_obj(set_selected_obj_name)
-
-
-
-    #event loop
-    for event in pygame.event.get():
-
-        #reset the spring force for every object
-        for instance in PhysicsObject.instancelist:
-            instance.setSpring((0, 0))
-
-        #stop the program if someone exits
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            print(str(pygame.mouse.get_pos()) + str((calc_pixel_to_game_coords(pygame.mouse.get_pos()[0]), calc_pixel_to_game_coords(y=pygame.mouse.get_pos()[1]))))
-
-            #setup for draw arrow creation
-            last_mous_clickpos = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            selected_an_obj = False
-            mousePressed = True
-            last_click_selected_obj = False
-            mouseHoldLength = 0
-
-            #if you click on an object select that object
-            for instance in PhysicsObject.instancelist:
-                if instance.check_pos(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) == True:
-                    set_selected_obj_name = instance
-                    selected_obj = set_selected_obj(set_selected_obj_name)
-
-                    selected_an_obj = True
-                    
-                    last_click_selected_obj = True
-            
-            #set the start of the arrow if a player drags in an open space (or on an object)
-            click_arrow_start = (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-
-        if event.type == pygame.MOUSEBUTTONUP:
-            mousePressed = False
-
-    #check if someone is pulling on an object
-    if last_click_selected_obj == True and mouseHoldLength > 0.3:
-        drawSpringArrow = True
+#texts
+def create_text(text='text',Centre=None, maxcoords=((100, 100), (400, 200)), color=liteblue,font=fontfreesan, antialias=True, outline=None):
+    text = str(text)
+    if not Centre == None:
+        text = font.render(text, antialias, color)
+        textRect = text.get_rect()
+        textRect.center = (Centre[0], Centre[1])
     else:
-        drawSpringArrow = False
-    
-    #draw an arrow when somone drags the screen
-    if mousePressed == True:
-        mouseHoldLength = mouseHoldLength + time_delta
-        print(mouseHoldLength)
+        textpos = calc_text_coords(text, ((maxcoords[0][0] + maxcoords[1][0]) / 2, (maxcoords[0][1] + maxcoords[1][1]) / 2), font)
 
-        last_mous_pos = pygame.mouse.get_pos()
-        click_arrow_end = pygame.mouse.get_pos()
-        if drawSpringArrow:
-            click_arrow_start = (selected_obj.objectX + 10, selected_obj.objectY + 10)
+        coordsDiffX = textpos[1][0] - textpos[0][0]
+        coordsDiffY = textpos[1][1] - textpos[0][1]
 
-    #draw set the spring force for an object if it is pulled on
-    if drawSpringArrow:
-        click_arrow_start = (selected_obj.objectX + 10, selected_obj.objectY + 10)
-
-        springlengthX = calc_pixel_to_game_coords(click_arrow_start[0]) - calc_pixel_to_game_coords(click_arrow_end[0]) 
-        springlengthY =  calc_pixel_to_game_coords(click_arrow_end[1]) - calc_pixel_to_game_coords(click_arrow_start[1]) 
-        NewFspring = [springlengthX * -clickSpringConstant * springMultiplier, springlengthY * -clickSpringConstant * springMultiplier]
-        for instance in PhysicsObject.instancelist:
-            if instance == selected_obj:
-                instance.setSpring(NewFspring)
+        maxCoordsDifX = maxcoords[1][0] - maxcoords[0][0]
+        maxCoordsDifY = maxcoords[1][1] - maxcoords[0][1]
         
+        if (maxCoordsDifX / coordsDiffX) <= (maxCoordsDifY / coordsDiffY):
+            font = pygame.font.Font('freesansbold.ttf', round((maxCoordsDifX / coordsDiffX) * 20.0))
+        else:
+            font = pygame.font.Font('freesansbold.ttf', round((maxCoordsDifY / coordsDiffY) * 20.0))
 
-    #clear screen
-    screen.fill((0, 0, 0))
+        textsize = calc_text_coords(text, ((maxcoords[0][0] + maxcoords[1][0]) / 2, (maxcoords[0][1] + maxcoords[1][1]) / 2), font)
 
-    #menu settings
-    object_settings = [{"Naam" : selected_obj.name, "Massa": selected_obj.m, "Oppervlakte" : selected_obj.opp, "StartHoogte" : selected_obj.startpos[1], "PosX" : selected_obj.pos[0], "Hoogte" : selected_obj.pos[1], "Velocity x":  selected_obj.vel[0], "Velocity Y": selected_obj.vel[1], "Luchtdruk": selected_obj.Luchtdruk},
-                        {"Fres": sqrt(selected_obj.Fres[0]**2 + selected_obj.Fres[1]**2), "Fz" : selected_obj.Fz[1], "Flucht" : sqrt(selected_obj.Flucht[0]**2 + selected_obj.Flucht[1]**2)},
-                        {}]
-
-    undersettings = [{"Width" : simfieldsizex, "Height": simfieldsizey},
-                     {"IRL time": TotalIRLTime, "In Sim Time": str(round(TotalSteps / StepsPerSec / 3600)) + "Uur"},
-                     {"Arrow F size" : Fmultiplier, "Arrow Vel size": Velmultiplier}]
-
-    #menu blocks
-    #setting menu
-    #right
-    rightMenuX1 = 20 + (screen.get_width() - 20) / (screenlayout[0][0] + screenlayout[2][0]) * screenlayout[0][0]
-    rightMenuY1 = 10
-    rightMenuX2 = rightMenuX1 - 10 + (screen.get_width() - 20) / (screenlayout[0][0] + screenlayout[2][0]) * screenlayout[2][0]
-    rightMenuY2 = screen.get_height() - 10
-
-    #under
-    underMenuX1 = 10
-    underMenuY1 = 20 + screen.get_height()  / (screenlayout[0][1] + screenlayout[1][1]) * screenlayout[0][1]
-    underMenuX2 = screen.get_width() / (screenlayout[0][0] + screenlayout[2][0]) * screenlayout[0][0]
-    underMenuY2 = screen.get_height() - 10
-
-    
-    #draw the menu's
-    create_rectangle((simFieldX1, simFieldY1),(simFieldX2, simFieldY2))
-    create_menu((rightMenuX1, rightMenuY1), (rightMenuX2, rightMenuY2), divisions=[3, 2], names=['Object', 'Krachten'], isVertical=True, settings=object_settings)
-    create_menu((underMenuX1, underMenuY1), (underMenuX2, underMenuY2), isVertical=False, divisions=[1,2,1], names=["Grafiek", "Tijd", "Settings"], settings=undersettings)
-
-    #update menus
-    pygame.display.flip()
-    #manager.draw_ui(screen)
-
-    #draw gravity pixels
-    if GravtityPixelsEnabled == True:
-        maxGrav = 10e29
-        gravDivisions = 50
-        #divide the simfield in a x and y grid
-        for divisionx in range(gravDivisions):
-            for divisiony in range(gravDivisions):
-                currentGrav = 0.0
-                
-                #calculate the coordintes of the current region
-                divisionX1 = (simFieldX2 - simFieldX1) / gravDivisions * (divisionx) - 1
-                divisionX2 = (simFieldX2 - simFieldX1) / gravDivisions * (divisionx +  1)
-                divisionY1 = (simFieldY2 - simFieldY1) / gravDivisions * (divisiony) - 1
-                divisionY2 = (simFieldY2 - simFieldY1) / gravDivisions * (divisiony + 1)
-                
-                #calculate the centre of the current block in the grid
-                pixelSimX = calc_pixel_to_game_coords(x=(divisionX2 + divisionX1) / 2)
-                pixelSimY = calc_pixel_to_game_coords(y=(divisionY2 + divisionY1) / 2 )
-                
-                #calculate the gravity
-                for instance in PhysicsObject.instancelist:
-                    currentGrav = currentGrav + (instance.m**2 * G) / ((instance.pos[0] - pixelSimX)**2 + (instance.pos[1] - pixelSimY)**2 + 0.0001)
-                grav = currentGrav / maxGrav
-
-                #set the color
-                pixelcolor = (round(clamp(grav*255, 0, 255)), round(clamp(grav*255, 0, 255)), round(clamp(grav*255, 0, 255)))
-                #apply to the screen (this function makes it lag)
-                screen.fill(pixelcolor, ((10 + divisionX1, 10 + divisionY1), (divisionX2 - divisionX1, 10 + divisionY2)))      
-
-
-    #counts total simulation steps
-    TotalSteps = TotalSteps + 1
- 
-    #calculate new object state for every physics obj
-    [instance.update() for instance in PhysicsObject.instancelist]
-
-    #draw the velocity arrows behind the objects
-    [instance.draw_vel_arrow() for instance in PhysicsObject.instancelist]
-
-    #draw the force arrow if an object is selected
-    for instance in PhysicsObject.instancelist:
-        if instance == selected_obj:
-                instance.draw_force_arrows(enabledArrows, enabledArrowsColors)
-
-    #draw new obj arrow
-    if drawSpringArrow:
-        create_arrow(click_arrow_start, click_arrow_end)
-    elif mousePressed == True and drawSpringArrow != True:
-        create_arrow(click_arrow_start, click_arrow_end)
+        text = font.render(text, antialias, color)
+        textRect = text.get_rect()
+        if outline == None:
+            textRect.center = ((maxcoords[0][0] + maxcoords[1][0]) / 2 - (textsize[0][0] - maxcoords[0][0]), (maxcoords[0][1] + maxcoords[1][1]) / 2 - (textsize[0][1] - maxcoords[0][1]))
         
-    #draw the object icon on top to the screen and display its force vectors
-    [instance.display_object() for instance in PhysicsObject.instancelist]
+        elif outline == "right":
+            textRect.center = ((maxcoords[0][0] + maxcoords[1][0]) / 2 + (textsize[0][0] - maxcoords[0][0]), (maxcoords[0][1] + maxcoords[1][1]) / 2 + (textsize[0][1] - maxcoords[0][1]))
 
-    #draw the entire picture to the screen
-    pygame.display.update()
 
-    #calculate simulation time
-    EndTime = time.time()
 
-    TotalIRLTime = TotalIRLTime + (time.time() - StartTime)
+    screen.blit(text, textRect)
+    return text, textRect
+
+#input two coord and print a rectangle
+def create_rectangle(leftup=(10, 10), rightdown=(100, 100), color=gray, withheight=None, surface=screen, border_radius= -1, border_top_left_radius= -1, border_top_right_radius= -1, border_bottom_left_radius= -1, border_bottom_right_radius= -1):
+    if withheight == None:
+        width = rightdown[0] - leftup[0]
+        height = rightdown[1] - leftup[1]
+    elif withheight != None:
+        width = withheight[0]
+        height = withheight[1]
+
+    pygame.draw.rect(surface, color, pygame.Rect(leftup[0], leftup[1], width, height),  border_radius= -1, border_top_left_radius= -1, border_top_right_radius= -1, border_bottom_left_radius= -1, border_bottom_right_radius= -1)
+
+def create_line(coord1 = (100, 100), coord2 = (200,200), color=black, width = 2, text = None, textColor=None):
+    pygame.draw.line(screen, color, coord1, coord2, width = width)
+    length = hypot(coord2[0]-coord1[0], coord2[1]-coord1[1])
+    
+    if textColor == None:
+        textColor = color
+    
+    textpos = ((coord1[0] +coord2[0]) / 2 - 10, (coord1[1] +coord2[1]) / 2 - 10)
+    
+    if text != None:
+        create_text(text, textpos, color=textColor)
+
+#give the start and end of an arrow you can set a text that will be in the centre
+def create_arrow(begin=(100, 100), end=(200, 400), width=5, arrow_size=None, color=blue, text=None, textColor=None, textfont=fontfreesan, textposoffset=0):
+    global screenXYratio
+    
+    if textColor == None:
+        textColor = color    
+    
+    length = hypot(end[0]-begin[0], end[1]-begin[1])
+
+    angle = atan2((end[1]-begin[1]), (end[0]-begin[0]))
+
+    cosangle = cos(angle)
+    sinangle = sin(angle)
+
+    if arrow_size == None:
+        arrow_length = width
+    else:
+        arrow_length = arrow_size
+
+
+    maxArrow  = 3000
+    minArrow = -maxArrow
+
+
+    if length < maxArrow:
+        rotatexoffset = width / 2 * cos(radians(90 - degrees(angle)))
+        rotateyoffset = width / 2 * sin(radians(90 - degrees(angle)))
+
+        pointTriBeginX = begin[0] + (length - arrow_length) * cosangle
+        pointTriBeginY = begin[1] + (length - arrow_length) * sinangle
+
+        vertecies = [(begin[0] + rotatexoffset, begin[1] - rotateyoffset), 
+                    (pointTriBeginX + rotatexoffset, pointTriBeginY - rotateyoffset),
+                    (pointTriBeginX + rotatexoffset * 2, pointTriBeginY - 2 * rotateyoffset),
+                    (end[0], end[1]),
+                    (pointTriBeginX - rotatexoffset * 2, pointTriBeginY + 2 * rotateyoffset),
+                    (pointTriBeginX - rotatexoffset, pointTriBeginY + rotateyoffset),
+                    (begin[0] - rotatexoffset, begin[1] + rotateyoffset)
+                    ]
+
+        if textColor == None:
+            textColor = color
+
+
+        if text != None:
+            textpos = (begin[0] + (length / 2) * cosangle + 10 + textfont.size(text)[0] / 2, begin[1] + (length / 2) * sinangle - 5 - textfont.size(text)[1] / 2 + textposoffset)
+            create_text(text, textpos, color=textColor)
+    else: 
+        angle = atan2((end[1]-begin[1]), (end[0]-begin[0]))
+
+        rotatexoffset = width / 2 * cos(radians(90 - degrees(angle)))
+        rotateyoffset = width / 2 * sin(radians(90 - degrees(angle)))
+        
+        pointTriBeginX = begin[0] + (maxArrow - arrow_length) * cosangle
+        pointTriBeginY = begin[1] + (maxArrow - arrow_length) * sinangle
+
+        vertecies = [(begin[0] + rotatexoffset, begin[1] - rotateyoffset), 
+                    (pointTriBeginX + rotatexoffset, pointTriBeginY - rotateyoffset),
+                    (pointTriBeginX + rotatexoffset * 2, pointTriBeginY - 2 * rotateyoffset),
+                    (begin[0] + maxArrow * cosangle, begin[1] + maxArrow * sinangle),
+                    (pointTriBeginX - rotatexoffset * 2, pointTriBeginY + 2 * rotateyoffset),
+                    (pointTriBeginX - rotatexoffset, pointTriBeginY + rotateyoffset),
+                    (begin[0] - rotatexoffset, begin[1] + rotateyoffset)
+                    ]
+
+        if textColor == None:
+            textColor = color
+
+        if text != None:
+            textpos = (begin[0] + (maxArrow / 2) * cosangle + 10 + textfont.size(text)[0] / 2, begin[1] + (maxArrow / 2) * sinangle - 5 - textfont.size(text)[1] / 2 + textposoffset)
+            create_text(text, textpos, color=textColor)
+
+    pygame.draw.polygon(screen, color, vertecies)
+
+#create menu with values or settings/buttons
+def create_menu(leftup=(10, 10), rightdown=(100, 100), color1=gray, color2=litegray, color3=litergray, color4=liteblue, divisions=[1], names=['name'], isVertical=True, nameSize=30, settingValues=None, Font='freesansbold.ttf', fontTitelSize=20, fontSettingSize=15, settings=[{"Hoogte": "10", 'snelheid': '17'}, {'1' : 1, "2": '2'}]):
+    
+    if len(names) != len(divisions):
+        print('Every menu should have a name.')
+        return
+
+    #check if there is enough space for the menu
+    # if isVertical == True:
+    #     if rightdown[0] - leftup[0] < 2 * 5 + (len(divisions) - 1) * 5 + 3 * len(divisions) + 40 * len(divisions):
+    #         print('Not enough space.')
+    #         return
+    # elif isVertical == False:
+    #     if rightdown[1] - leftup[1] < 2 * 5 + (len(divisions) - 1) * 5 + 3 * len(divisions) + 20 * len(divisions):
+    #         print('Not enough space.')
+    #         return
+
+    #create menu fonts
+    menuFont = pygame.font.Font(Font, fontTitelSize)
+    settingFont = pygame.font.Font(Font, fontSettingSize)
+    create_rectangle(leftup, rightdown, color1)
+    divisioncount = 0
+    totalDivNumber = 0
+    totalSpace = 5
+
+    for i in divisions:
+        totalDivNumber = totalDivNumber + i
+
+    while divisioncount < len(divisions):
+        
+        if isVertical == True:
+            space = (rightdown[1] - leftup[1] - (len(divisions) * 5) + 10) * (divisions[divisioncount] / totalDivNumber)
+            create_rectangle((leftup[0] + 5, leftup[1] + totalSpace),(rightdown[0] - 5, leftup[1] + totalSpace + space - 5), color2)
+            create_rectangle((leftup[0] + 8, leftup[1] + totalSpace + 3),(rightdown[0] - 8, leftup[1] + totalSpace + nameSize), color3)
+            create_text(str(names[divisioncount]), maxcoords=((leftup[0] + 8, leftup[1] + totalSpace + 5),(leftup[0] + (leftup[0] + rightdown[0]) / 2, leftup[1] + totalSpace + nameSize)), color=color4, font=menuFont)
+
+            reached_bottom = 0
+            setting_row_count = 0
+
+            currentSettingsKeys = list(settings[divisioncount].keys())
+            currentSettingsValues = list(settings[divisioncount].values())
+
+
+            for i in range(len(currentSettingsKeys)):
+                if leftup[1] + totalSpace + nameSize + setting_row_count * 30 + 10 <= totalSpace + space: 
+                    setting_row_count = setting_row_count + 1
+                else:
+                    reached_bottom = reached_bottom + 1
+                    setting_row_count = 0
+
+                create_text(str(currentSettingsKeys[i]), maxcoords=((leftup[0] + 10 + reached_bottom * (rightdown[0] - leftup[0]) / 2, leftup[1] + totalSpace + nameSize - 20 + setting_row_count * 25 + reached_bottom * 25), 
+                                                        (leftup[0] + (rightdown[0] - leftup[0]) / 4 + 10 + reached_bottom * (rightdown[0] - leftup[0]) / 2, leftup[1] + totalSpace + nameSize + 5 + setting_row_count * 25 + reached_bottom * 25)))
+                
+
+                valueBox = ((leftup[0] + 10 + reached_bottom * (rightdown[0] - leftup[0]) / 2 + (rightdown[0] - leftup[0] - 30) / 4, leftup[1] + totalSpace + nameSize - 15 + setting_row_count * 25 + reached_bottom * 25), 
+                            (leftup[0] + (rightdown[0] - leftup[0] - 20) / 2 + 10 + reached_bottom * (rightdown[0] - leftup[0] - 30) / 2, leftup[1] + totalSpace + nameSize + 5 + setting_row_count * 25 + reached_bottom * 25))
+
+                if isinstance(currentSettingsValues[i],(int, float)):
+                    create_text(round(currentSettingsValues[i] * 1.00, 2), maxcoords=valueBox, color=white, outline="right")
+                elif not currentSettingsValues[i] == None: 
+                    create_text(str(currentSettingsValues[i]), maxcoords=valueBox, color=white, outline="right")
+                else:
+                    create_text("None", maxcoords=valueBox, color=white, outline="right")
+
+
+            totalSpace = totalSpace + space
+
+        elif isVertical == False:
+            space = (leftup[0]  + (rightdown[0] - leftup[0])) * (divisions[divisioncount] / totalDivNumber)
+            create_rectangle((leftup[0] + totalSpace, leftup[1] + 5),(leftup[0] + totalSpace + space - 5, rightdown[1] - 5), color2)
+            create_rectangle((leftup[0] + totalSpace + 3, leftup[1] + 8),(leftup[0] + totalSpace + space - 8, leftup[1] + nameSize), color3)
+            create_text(str(names[divisioncount]), maxcoords=((leftup[0] + totalSpace + 8, leftup[1] + 5),(leftup[0] + totalSpace + space - 5, leftup[1] + nameSize)), color=color4, font=menuFont)
+
+            reached_bottom = 0
+            setting_row_count = 0
+            
+            currentSettingsKeys = list(settings[divisioncount])
+            currentSettingsValues = list(settings[divisioncount].values())
+            
+            for i in range(len(settings[divisioncount])):
+                if leftup[0] + totalSpace + space / 2<= totalSpace + space: 
+                    setting_row_count = setting_row_count + 1
+                else:
+                    reached_bottom = reached_bottom + 1
+                    setting_row_count = 0
+
+                if names[divisioncount] in singleSettingList:
+                    reached_bottom = 0
+                    #makes it so you texts are not very small in small menu's
+                    firstSettingSpacing = 2
+                    secondSettingSpacing = 1
+                else:
+                    firstSettingSpacing = 4
+                    secondSettingSpacing = 2
+
+                create_text(str(currentSettingsKeys[i]), maxcoords=((leftup[0] + reached_bottom * (totalSpace + space) / 2 + totalSpace, leftup[1] + nameSize - 20 + setting_row_count * 25 + reached_bottom * 25), 
+                                                        (leftup[0] + reached_bottom * (totalSpace + space) / 2 + totalSpace + space / firstSettingSpacing, leftup[1] + nameSize + 5 + setting_row_count * 25 + reached_bottom * 25)))
+                
+
+                valueBox = ((leftup[0] + reached_bottom * (totalSpace + space) + totalSpace + space / firstSettingSpacing, leftup[1] + nameSize - 20 + setting_row_count * 25 + reached_bottom * 25), 
+                            (leftup[0] + reached_bottom * (totalSpace + space) + totalSpace + space / secondSettingSpacing - 10, leftup[1] + nameSize + 5 + setting_row_count * 25 + reached_bottom * 25))
+
+                if isinstance(currentSettingsValues[i],(int, float)):
+                    create_text(str(round(currentSettingsValues[i] * 1.00, 2)), maxcoords=valueBox, color=white, outline="right")
+                elif not currentSettingsValues[i] == None: 
+                    create_text(str(currentSettingsValues[i]), maxcoords=valueBox, color=white, outline="right")
+                else:
+                    create_text("None", maxcoords=valueBox, color=white, outline="right")
+
+            totalSpace = totalSpace + space
+
+        divisioncount = divisioncount + 1
+        
+def create_circle(center = (100, 100), radius= 100, width=4, color = white):
+    pygame.draw.circle(screen, color,  center= center, radius= radius, width=width)     
+
+def create_point(center = (100, 100), radius= 2, width=5, color = white):
+    pygame.draw.circle(screen, color,  center= center, radius= radius, width=width)     
+
 
