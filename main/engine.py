@@ -11,20 +11,20 @@ from screen.calc import *
 from settings.settings import *
 
 #create objects
-Baumgartner = PhysicsObject(name='Baumgartner',startposy=39045, startposx=200, startvelx=100, massa=80, opp=2, drag=0.7, useParachute=True, parachuteOpp=42.6, parachuteDrag=1.75, parachuteDeployTime=5, parachuteDeployHeight=3000, icon='skydiving')
+# Baumgartner = PhysicsObject(name='Baumgartner',startposy=39045, startposx=200, startvelx=100, massa=80, opp=2, drag=0.7, useParachute=True, parachuteOpp=42.6, parachuteDrag=1.75, parachuteDeployTime=5, parachuteDeployHeight=3000, icon='skydiving')
 
-# sun = PhysicsObject(name='sun', startposy=simfieldsizey / 2, startposx=simfieldsizex / 2, massa=4e30 , useParachute=False, useAirRes=False, useSolarSys=True)
+sun = PhysicsObject(name='sun', startposy=simfieldsizey / 2, startposx=simfieldsizex / 2, massa=4e30 , useParachute=False, useAirRes=False, useSolarSys=True)
 # sun2 = PhysicsObject(name='sun2', startposy=simfieldsizey / 4 * 3, startposx=simfieldsizex / 2, massa=4e30 , useParachute=False, startvelx=30000, useAirRes=False, useSolarSys=True, icon='sun')
 
-# mercury = PhysicsObject(name='mercury', startposy=sun.startpos[1], startposx=sun.startpos[0] - 0.58e11, massa=3.285E23 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=47480)
+mercury = PhysicsObject(name='mercury', startposy=sun.startpos[1], startposx=sun.startpos[0] - 0.58e11, massa=3.285E23 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=47480)
 
-# venus = PhysicsObject(name='venus', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.08e11, massa=4.867E24 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=35020)
+venus = PhysicsObject(name='venus', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.08e11, massa=4.867E24 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=35020)
 
-# earth = PhysicsObject(name='earth', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.6e11, massa=5.97219e24, useParachute=False, useAirRes=False, startvelx=0, startvely=29780, useSolarSys=True)
+earth = PhysicsObject(name='earth', startposy=sun.startpos[1], startposx=sun.startpos[0] - 1.6e11, massa=5.97219e24, useParachute=False, useAirRes=False, startvelx=0, startvely=29780, useSolarSys=True)
 
-# moon = PhysicsObject(name='moon', startposy=earth.startpos[1], startposx=earth.startpos[0] - 3.844e9, massa=7.34767309e22 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=earth.vel[1], startvelx=1000)
+moon = PhysicsObject(name='moon', startposy=earth.startpos[1], startposx=earth.startpos[0] - 3.844e9, massa=7.34767309e22 , useParachute=False, useAirRes=False, useSolarSys=True, startvely=earth.vel[1], startvelx=1000)
 
-# mars = PhysicsObject(name='mars', startposy=sun.startpos[1], startposx=sun.startpos[0] - 2.28e11, massa=6.39E23, useParachute=False, useAirRes=False, startvelx=0, startvely=24130, useSolarSys=True)
+mars = PhysicsObject(name='mars', startposy=sun.startpos[1], startposx=sun.startpos[0] - 2.28e11, massa=6.39E23, useParachute=False, useAirRes=False, startvelx=0, startvely=24130, useSolarSys=True)
 
 #game loop
 running = True
@@ -33,14 +33,15 @@ clock = pygame.time.Clock()
 #initialize phisics objects
 [instance.update() for instance in PhysicsObject.instancelist]
 
+
 #reload selected of
-set_selected_obj_name = Baumgartner
+set_selected_obj_name = earth
 
 #run gui till the program is quitted
 while running:
     #setup for frame time calculation
     StartTime = time.time()
-    time_delta = clock.tick(60)/1000.0
+    time_delta = clock.tick(60) / 1000.0
 
     #set the screen size if it has changed
     screenX = screen.get_size()[0]
@@ -125,7 +126,7 @@ while running:
     screen.fill((0, 0, 0))
 
     #menu settings
-    object_settings = [{"Naam" : selected_obj.name, "Massa": selected_obj.m, "Oppervlakte" : selected_obj.opp, "StartHoogte" : selected_obj.startposy, "PosX" : selected_obj.posx, "Hoogte" : selected_obj.posy, "Velocity x":  selected_obj.vel[0], "Velocity Y": selected_obj.vel[1], "Luchtdruk": selected_obj.Luchtdruk},
+    object_settings = [{"Naam" : selected_obj.name, "Massa": selected_obj.m, "Oppervlakte" : selected_obj.opp, "StartHoogte" : selected_obj.startpos[1], "PosX" : selected_obj.pos[0], "Hoogte" : selected_obj.pos[1], "Velocity x":  selected_obj.vel[0], "Velocity Y": selected_obj.vel[1], "Luchtdruk": selected_obj.Luchtdruk},
                         {"Fres": sqrt(selected_obj.Fres[0]**2 + selected_obj.Fres[1]**2), "Fz" : selected_obj.Fz[1], "Flucht" : sqrt(selected_obj.Flucht[0]**2 + selected_obj.Flucht[1]**2)},
                         {}]
 

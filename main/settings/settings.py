@@ -21,24 +21,24 @@ screenY = 600
 
 #TIME
 #In hoeveel aparte berekeningen de animatie wordt opgedeeld per seconde
-StepsPerSec = 30 #0.0001   
+StepsPerSec = 0.0001   
 #Hoeveel gesimuleerde secondes in een echte seconde voorkomen
-SpeedMultiplier = 10 #100000
+SpeedMultiplier = 100000 # 10
 
 #how much effect pulling on an object has
 clickSpringConstant = 0.957
-springMultiplier = 1 #10 * 10**10
+springMultiplier =10 * 10**10 # 1 #
 
 #PHYSICS
 #gravity
-Zw = -9.81
+Zw = 0 #-9.81
 G = 6.650338e-11
 GravtityPixelsEnabled = False
 
 #ARROWS
 #pijl grootte multiplier hoe kleiner hoe groter de pijlen
-Fmultiplier = 10 #30e19 #
-Velmultiplier = 1 #10e2 # 
+Fmultiplier = 30e19 #10 #
+Velmultiplier = 10e2 # 1 #
 #what forces are given an arrow
 enabledArrows = ("Fz","Flucht", "Fres", "Fzw", "Fspring")
 enabledArrowsColors = (black, liteblue, blue, litegray, white)
@@ -50,9 +50,9 @@ singleSettingList = ["Grafiek", "Settings"]
 
 #SIMFIELD
 #simfieldsize in m
-simfieldsizex = None #8e11 #None  #
-#simfieldsizey = None
-simfieldsizey = 40000.0
+simfieldsizex = 8e11 #None  #
+simfieldsizey = None
+# simfieldsizey = 40000.0
 
 
                         
